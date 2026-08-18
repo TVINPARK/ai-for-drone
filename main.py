@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from qt.core.config import load_config
 from qt.capture.source import MssSource, DxCamSource
-from qt.ocr.engine import TesseractEngine
+from qt.ocr.engine import EasyOCREngine
 from qt.ocr.digits import TemplateEngine
 from qt.sticks.detector import StickDetector
 from qt.logger import DataLogger
@@ -51,7 +51,7 @@ class OcrEngine:
     """Обёртка над OCR движками."""
     def __init__(self, config):
         self.config = config
-        self.tesseract = TesseractEngine(config)
+        self.easyocr = EasyOCREngine(config)
         self.template_engine = TemplateEngine(config)
     
     def process_frame(self, frame):
