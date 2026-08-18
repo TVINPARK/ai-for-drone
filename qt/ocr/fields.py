@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from .digits import TemplateEngine
-from .engine import TesseractEngine
+from .engine import EasyOCREngine
 from .preprocess import prepare
 
 FIELD_SPECS = {
@@ -60,20 +60,24 @@ def clean_pilot(s):
 class HudParser:
     def __init__(self, cfg: dict, atlas_path=None):
         self.tpl = TemplateEngine(atlas_path)
-        self.tess = TesseractEngine(cfg)
+        self.ocr = EasyOCREngine(cfg)
 
     def parse_field(self, name, crop):
         spec = FIELD_SPECS[name]
         if name == "pilot":
-            txt, conf = self.tess.run(crop, spec)
+            txt, conf = self.ocr.run(crop, spec)
             return clean_pilot(txt), txt, conf
         bw = prepare(crop, spec)
         text, conf = ("", 0.0)
         if self.tpl.trained:
             text, conf = self.tpl.recognize(bw, spec["kind"])
         if parse_value(spec["kind"], text) is None:
-            t2, c2 = self.tess.run(bw, spec, binary=True)
+            t2, c2 = self.ocr.run(bw, spec, binary=True)
             j2 = re.sub(r"\s+", "", t2)
             if parse_value(spec["kind"], j2) is not None:
                 text, conf = j2, min(c2, 0.9)
         return parse_value(spec["kind"], text), text, conf
+
+# Алиас для обратной совместимости
+parse_fields = HudParser
+FieldSpec = dict
