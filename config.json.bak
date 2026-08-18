@@ -1,0 +1,140 @@
+{
+  "capture": {
+    "backend": "auto",
+    "monitor": 0,
+    "fps_target": 0
+  },
+  "screen": {
+    "width": 1920,
+    "height": 1080
+  },
+  "rois": {
+    "pilot": [
+      0,
+      0,
+      471,
+      33
+    ],
+    "datetime": [
+      40,
+      39,
+      152,
+      21
+    ],
+    "battery": [
+      40,
+      68,
+      190,
+      30
+    ],
+    "mode": [
+      40,
+      107,
+      92,
+      30
+    ],
+    "limit": [
+      1662,
+      29,
+      220,
+      84
+    ],
+    "speed": [
+      107,
+      528,
+      81,
+      75
+    ],
+    "alt": [
+      1597,
+      556,
+      16,
+      23
+    ],
+    "laps": [
+      40,
+      1003,
+      211,
+      79
+    ],
+    "cur_time": [
+      186,
+      1028,
+      171,
+      54
+    ],
+    "best_time": [
+      1652,
+      1026,
+      270,
+      56
+    ]
+  },
+  "sticks": {
+    "left": {
+      "center": [
+        849,
+        1075
+      ],
+      "radius_px": 65,
+      "dot_rgb": [
+        255,
+        255,
+        255
+      ],
+      "dot_hsv_lo": [
+        0,
+        0,
+        180
+      ],
+      "dot_hsv_hi": [
+        180,
+        80,
+        255
+      ]
+    },
+    "right": {
+      "center": [
+        1008,
+        1076
+      ],
+      "radius_px": 66,
+      "dot_rgb": [
+        255,
+        255,
+        255
+      ],
+      "dot_hsv_lo": [
+        0,
+        0,
+        180
+      ],
+      "dot_hsv_hi": [
+        180,
+        80,
+        255
+      ]
+    }
+  },
+  "ocr": {
+    "engine": "template",
+    "tess_cmd": "tesseract",
+    "hz_fast": 10.0,
+    "hz_slow": 1.0,
+    "median_window": 5,
+    "hold_last_valid_s": 1.0
+  },
+  "events": {
+    "crash_speed_drop_s": 0.3,
+    "hud_lost_s": 2.0,
+    "timer_stuck_s": 3.0
+  },
+  "report": {
+    "sectors_n": 3,
+    "out_dir": "reports"
+  },
+  "db": {
+    "path": "telemetry.db",
+    "batch_ms": 500
+  }
+}
