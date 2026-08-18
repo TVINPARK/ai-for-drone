@@ -1,7 +1,8 @@
 {
     "capture": {
-        "fps": 60,
-        "device_idx": 0
+        "backend": "auto",
+        "monitor": 0,
+        "fps_target": 60
     },
     "rois": {
         "pilot": {
