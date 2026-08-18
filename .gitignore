@@ -1,67 +1,49 @@
 ```
-# Database files
-*.db
-*.db-shm
-*.db-wal
-
-# Python
-__pycache__/
+# Compiled and build artifacts
 *.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.ENV
-.ENV.local
-.env
-.env.local
-*.env.*
-.venv/
-venv*/
-.python-version
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-*.tmp
-*.swp
-*~
-.DS_Store
-Thumbs.db
-
-# Build artifacts
-build/
+__pycache__/
+*.o
+*.obj
 dist/
-*.egg
-*.egg-info/
-.eggs/
-.installed.cfg
-*.so
-
-# Testing
-.pytest_cache/
-.hypothesis/
-.coverage*/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Executables
+build/
 *.exe
 *.dll
 *.so
-*.dylib
+*.a
+*.out
+
+# Dependencies
+.venv/
+venv/
+node_modules/
+.mypy_cache/
+.pytest_cache/
+target/
+.gradle/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
 
 # Compressed files
 *.zip
@@ -82,17 +64,4 @@ dist/
 *.Z
 *.lz
 *.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-
-# Video files
-*.mp4
-*.avi
-*.mov
-*.wmv
-*.flv
-*.mkv
-*.webm
 ```

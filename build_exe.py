@@ -76,9 +76,10 @@ def create_exe():
         '--onefile',              # Один файл
         '--windowed',             # Без консоли (для GUI)
         '--name', 'QuadrosimTelemetry',
-        '--icon', 'NONE',         # Можно указать путь к .ico файлу
+        '--icon', str(project_root / 'assets' / 'app_icon.png') if (project_root / 'assets' / 'app_icon.png').exists() else 'NONE',         # Можно указать путь к .ico файлу
         '--add-data', 'config.json;.',
         '--add-data', 'schema.sql;.',
+        '--hidden-import', 'PIL.ImageTk',
         '--hidden-import', 'qt',
         '--hidden-import', 'qt.capture',
         '--hidden-import', 'qt.ocr',
