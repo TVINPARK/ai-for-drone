@@ -51,7 +51,11 @@ def parse_value(kind, joined):
     return None
 
 def clean_pilot(s):
-    return re.sub(r"\s+", " ", s).strip().upper()
+    # Удаляем ведущие/замыкающие пробелы, символы подчёркивания и другие артефакты
+    s = re.sub(r"[\s_]+", " ", s).strip()
+    # Удаляем одиночные символы в начале (артефакты распознавания)
+    s = re.sub(r"^[A-ZА-ЯЁ]\s+", "", s)
+    return s.upper()
 
 class HudParser:
     def __init__(self, cfg: dict, atlas_path=None):

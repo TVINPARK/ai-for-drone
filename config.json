@@ -1,140 +1,104 @@
 {
-  "capture": {
-    "backend": "auto",
-    "monitor": 0,
-    "fps_target": 0
-  },
-  "screen": {
-    "width": 1920,
-    "height": 1080
-  },
-  "rois": {
-    "pilot": [
-      0,
-      0,
-      471,
-      33
-    ],
-    "datetime": [
-      40,
-      39,
-      152,
-      21
-    ],
-    "battery": [
-      40,
-      68,
-      190,
-      30
-    ],
-    "mode": [
-      40,
-      107,
-      92,
-      30
-    ],
-    "limit": [
-      1695,
-      65,
-      161,
-      19
-    ],
-    "speed": [
-      107,
-      528,
-      81,
-      75
-    ],
-    "alt": [
-      1597,
-      556,
-      16,
-      23
-    ],
-    "laps": [
-      0,
-      962,
-      253,
-      120
-    ],
-    "cur_time": [
-      186,
-      958,
-      390,
-      124
-    ],
-    "best_time": [
-      1545,
-      1020,
-      377,
-      62
-    ]
-  },
-  "sticks": {
-    "left": {
-      "center": [
-        849,
-        1075
-      ],
-      "radius_px": 65,
-      "dot_rgb": [
-        255,
-        255,
-        255
-      ],
-      "dot_hsv_lo": [
-        0,
-        0,
-        180
-      ],
-      "dot_hsv_hi": [
-        180,
-        80,
-        255
-      ]
+    "capture": {
+        "fps": 60,
+        "device_idx": 0
     },
-    "right": {
-      "center": [
-        1008,
-        1076
-      ],
-      "radius_px": 66,
-      "dot_rgb": [
-        255,
-        255,
-        255
-      ],
-      "dot_hsv_lo": [
-        0,
-        0,
-        180
-      ],
-      "dot_hsv_hi": [
-        180,
-        80,
-        255
-      ]
+    "rois": {
+        "pilot": {
+            "x": 0,
+            "y": 0,
+            "w": 471,
+            "h": 33
+        },
+        "datetime": {
+            "x": 40,
+            "y": 39,
+            "w": 152,
+            "h": 21
+        },
+        "battery": {
+            "x": 126,
+            "y": 66,
+            "w": 104,
+            "h": 32
+        },
+        "mode": {
+            "x": 40,
+            "y": 107,
+            "w": 92,
+            "h": 30
+        },
+        "limit": {
+            "x": 1780,
+            "y": 60,
+            "w": 80,
+            "h": 30
+        },
+        "speed": {
+            "x": 107,
+            "y": 528,
+            "w": 81,
+            "h": 75
+        },
+        "alt": {
+            "x": 1580,
+            "y": 540,
+            "w": 50,
+            "h": 50
+        },
+        "laps": {
+            "x": 99,
+            "y": 1026,
+            "w": 36,
+            "h": 24
+        },
+        "cur_time": {
+            "x": 263,
+            "y": 1027,
+            "w": 95,
+            "h": 21
+        },
+        "best_time": {
+            "x": 1786,
+            "y": 1027,
+            "w": 95,
+            "h": 21
+        }
+    },
+    "sticks": {
+        "left": {
+            "center_x": 570,
+            "center_y": 1000,
+            "radius": 70,
+            "color_lo": [
+                4,
+                19,
+                84
+            ],
+            "color_hi": [
+                64,
+                119,
+                255
+            ]
+        },
+        "right": {
+            "center_x": 1022,
+            "center_y": 1000,
+            "radius": 70,
+            "color_lo": [
+                5,
+                15,
+                104
+            ],
+            "color_hi": [
+                65,
+                115,
+                255
+            ]
+        }
+    },
+    "filters": {
+        "window_size": 5,
+        "outlier_threshold": 0.3
     }
-  },
-  "ocr": {
-    "engine": "template",
-    "tess_cmd": "tesseract",
-    "hz_fast": 10.0,
-    "hz_slow": 1.0,
-    "median_window": 5,
-    "hold_last_valid_s": 1.0
-  },
-  "events": {
-    "crash_speed_drop_s": 0.3,
-    "hud_lost_s": 2.0,
-    "timer_stuck_s": 3.0
-  },
-  "report": {
-    "sectors_n": 3,
-    "out_dir": "reports"
-  },
-  "db": {
-    "path": "telemetry.db",
-    "batch_ms": 500
-  }
 }
