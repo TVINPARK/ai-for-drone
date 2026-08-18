@@ -1,1 +1,56 @@
-Nothing needs to be added to .gitignore since only a README.md file was added, which is a source/config file and should not be ignored.
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.venv3/
+.ENV/
+.ENV.local/
+*.env
+*.env.local
+.env
+.env.local
+.env.*
+venv/
+Venv/
+VE_ENV/
+env.bak/
+venv.bak/
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+
+# Build and distribution artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+.installed.cfg
+*.egg
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Icon?
+```

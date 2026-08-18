@@ -43,19 +43,92 @@ def _debridging(bw: np.ndarray) -> np.ndarray:
     n, labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
     if n <= 1:
         return bw
-    widths = [stats[i, cv2.CC_STAT_WIDTH] for i in range(1, n)]
-    wmed = sorted(widths)[len(widths) // 2]
-    out = np.zeros_like(bw)
-    kern = np.ones((3, 3), np.uint8)
+    
+    # Собираем информацию о всех компонентах
+    components = []
     for i in range(1, n):
-        comp = ((labels == i).astype(np.uint8)) * 255
+        x = stats[i, cv2.CC_STAT_LEFT]
+        y = stats[i, cv2.CC_STAT_TOP]
         w = stats[i, cv2.CC_STAT_WIDTH]
         h = stats[i, cv2.CC_STAT_HEIGHT]
-        merged = w > 1.25 * max(1, h) or w > 2.2 * wmed
+        comp = ((labels == i).astype(np.uint8)) * 255
+        components.append({'idx': i, 'x': x, 'y': y, 'w': w, 'h': h, 'comp': comp})
+    
+    # Сортируем по x-координате
+    components.sort(key=lambda c: c['x'])
+    
+    # Находим основные символы (широкие и высокие)
+    # Цифры: ширина >= 8, высота >= 20
+    # Двоеточие: ширина 4-8, высота < 20 (состоит из двух частей)
+    main_symbols = [c for c in components if c['w'] >= 8 or c['h'] >= 20]
+    
+    if len(main_symbols) < 3:
+        # Если мало основных символов, используем все компоненты шириной > 4
+        main_symbols = [c for c in components if c['w'] > 4]
+    
+    if not main_symbols:
+        return bw
+    
+    # Вычисляем медианную высоту основных символов
+    heights = [c['h'] for c in main_symbols]
+    hmed = sorted(heights)[len(heights) // 2]
+    
+    # Вычисляем диапазон X основных символов
+    x_min = min(c['x'] for c in main_symbols)
+    x_max = max(c['x'] + c['w'] for c in main_symbols)
+    
+    out = np.zeros_like(bw)
+    kern = np.ones((3, 3), np.uint8)
+    
+    for c in components:
+        x, y, w, h = c['x'], c['y'], c['w'], c['h']
+        comp = c['comp']
+        
+        # Проверяем не является ли компонент слипшимся символом
+        merged = w > 1.25 * max(1, h) or w > 2.2 * (w if not main_symbols else main_symbols[0]['w'])
         if merged:
             comp = cv2.morphologyEx(comp, cv2.MORPH_OPEN, kern)
             comp = _cut_tail(comp)
+            # Обновляем параметры после морфологии
+            ys, xs = np.where(comp > 0)
+            if ys.size == 0:
+                continue
+            x = int(xs.min())
+            y = int(ys.min())
+            w = int(xs.max()) - x + 1
+            h = int(ys.max()) - y + 1
+        
+        # Фильтр 1: Узкие вертикальные линии далеко от основных символов
+        if w <= 4 and h > 15:
+            # Проверяем расстояние до ближайшего основного символа
+            dist_to_nearest = min(abs(x - mc['x']) + abs(y - mc['y']) for mc in main_symbols)
+            if dist_to_nearest > 10:
+                continue
+        
+        # Фильтр 2: Компоненты далеко слева/справа от основного диапазона
+        if w <= 8:
+            if x < x_min - 12 or x > x_max:
+                continue
+        
+        # Фильтр 3: Узкие высокие линии между основными символами (артефакты разделителей)
+        if w <= 4 and h > 0.6 * hmed:
+            # Проверяем есть ли соседи слева и справа
+            left_exists = any(mc['x'] + mc['w'] < x - 5 for mc in main_symbols)
+            right_exists = any(mc['x'] > x + w + 5 for mc in main_symbols)
+            if left_exists and right_exists:
+                # Это может быть артефакт разделителя - проверяем расстояние
+                dist_left = min(x - (mc['x'] + mc['w']) for mc in main_symbols if mc['x'] + mc['w'] < x)
+                dist_right = min(mc['x'] - (x + w) for mc in main_symbols if mc['x'] > x + w)
+                if dist_left < 20 and dist_right < 20:
+                    continue
+        
+        # Фильтр 4: Очень маленькие компоненты (< 20 пикселей总面积)
+        area = (comp > 0).sum()
+        if area < 20 and w <= 4 and h <= 8:
+            continue
+        
         out = np.maximum(out, comp)
+    
     return out
 
 def prepare(crop: np.ndarray, spec: dict) -> np.ndarray:
