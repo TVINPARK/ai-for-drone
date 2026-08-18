@@ -119,6 +119,79 @@ def assign_rois(img, windows=WINDOWS, pad=PAD):
                       int(w + 2 * pad), int(h + 2 * pad)]
     return rois
 
+def auto_calibrate(image_path=None):
+    """
+    Автоматическая калибровка ROI.
+    
+    Args:
+        image_path: Путь к изображению для калибровки. Если None, пытается сделать скриншот.
+    
+    Returns:
+        bool: True если калибровка успешна, False иначе.
+    """
+    try:
+        from ..core.config import load_config, save_config, config_path
+        from ..core.io import imread_u
+        import cv2
+        import numpy as np
+        from pathlib import Path
+        import shutil
+        
+        # Загрузка конфигурации
+        cfg = load_config()
+        
+        # Получение изображения
+        if image_path is None:
+            # Попытка сделать скриншот текущего экрана
+            try:
+                import mss
+                with mss.mss() as sct:
+                    monitor = sct.monitors[0]  # Все экраны
+                    screenshot = sct.grab(monitor)
+                    img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGBA2BGR)
+                    print("Скриншот сделан успешно")
+            except Exception as e:
+                print(f"Не удалось сделать скриншот: {e}")
+                return False
+        else:
+            img = imread_u(image_path)
+            if img is None:
+                print(f"Не удалось прочитать изображение: {image_path}")
+                return False
+        
+        # Назначение ROI
+        rois = assign_rois(img)
+        
+        if not rois:
+            print("Не удалось определить зоны интереса")
+            return False
+        
+        # Сохранение конфигурации
+        p = config_path()
+        if p.exists():
+            shutil.copyfile(p, str(p) + ".bak")
+        
+        H, W = img.shape[:2]
+        print(f"Изображение {W}x{H}")
+        for name, r in rois.items():
+            print(f"{name:10s} -> {r}")
+        
+        missing = [k for k in WINDOWS if k not in rois]
+        if missing:
+            print(f"НЕ НАЙДЕНО: {', '.join(missing)}")
+        
+        cfg["rois"].update(rois)
+        cfg["screen"] = {"width": int(W), "height": int(H)}
+        save_config(cfg, p)
+        print(f"Конфигурация сохранена в {p}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"Ошибка автоматической калибровки: {e}")
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--image", required=True)
