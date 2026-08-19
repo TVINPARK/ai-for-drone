@@ -7,16 +7,16 @@ from .engine import EasyOCREngine
 from .preprocess import prepare
 
 FIELD_SPECS = {
-    "speed":     dict(kind="int", scale=4),
-    "alt":       dict(kind="int", scale=4),
-    "cur_time":  dict(kind="hms", scale=4),
-    "best_time": dict(kind="hms", scale=4),
-    "laps":      dict(kind="laps", scale=4),
-    "battery":   dict(kind="battery", scale=4),
-    "limit":     dict(kind="mmss", scale=4, color=dict(lo=[80, 40, 40], hi=[115, 255, 255])),
-    "datetime":  dict(kind="dt", scale=4),
-    "mode":      dict(kind="mode", scale=4),
-    "pilot":     dict(kind="pilot"),
+    "speed":     dict(kind="int", scale=4, field="speed"),
+    "alt":       dict(kind="int", scale=4, field="alt"),
+    "cur_time":  dict(kind="hms", scale=4, field="cur_t"),
+    "best_time": dict(kind="hms", scale=4, field="best_t"),
+    "laps":      dict(kind="laps", scale=4, field=("lap_cur", "lap_tot")),
+    "battery":   dict(kind="battery", scale=4, field=("bat_v", "bat_a")),
+    "limit":     dict(kind="mmss", scale=4, color=dict(lo=[80, 40, 40], hi=[115, 255, 255]), field="limit_s"),
+    "datetime":  dict(kind="dt", scale=4, field="dt_wall"),
+    "mode":      dict(kind="mode", scale=4, field="mode"),
+    "pilot":     dict(kind="pilot", field="pilot"),
 }
 TEMPLATABLE = sorted(k for k, s in FIELD_SPECS.items() if s["kind"] != "pilot")
 

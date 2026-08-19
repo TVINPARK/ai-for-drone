@@ -21,6 +21,8 @@ import numpy as np
 from typing import Optional, Tuple, Dict, Any, List
 import json
 
+from ..core.frame import Sticks
+
 
 class StickDetector:
     """
@@ -33,7 +35,11 @@ class StickDetector:
     """
     
     def __init__(self, config_path: str = "config.json"):
-        self.config = self._load_config(config_path)
+        # Если передан словарь, используем его напрямую
+        if isinstance(config_path, dict):
+            self.config = config_path
+        else:
+            self.config = self._load_config(config_path)
         
         # Параметры детекции
         self.min_area = 15       # Минимальная площадь пятна
@@ -142,7 +148,7 @@ class StickDetector:
             
         return (x, y, w, h)
 
-    def detect(self, frame: np.ndarray) -> Dict[str, Any]:
+    def detect(self, frame: np.ndarray) -> Sticks:
         """
         Основной метод детекции положения стиков.
         
@@ -150,17 +156,12 @@ class StickDetector:
             frame: Кадр изображения (BGR, numpy array)
             
         Returns:
-            Словарь с результатами:
-            {
-                "left": {"x": float, "y": float, "raw": (int,int), "detected": bool},
-                "right": {...}
-            }
-            где x,y — нормализованные значения [-1.0, 1.0]
+            Объект Sticks с нормализованными значениями осей [-1.0, 1.0]
         """
-        result = {
-            "left": {"x": 0.0, "y": 0.0, "raw": None, "detected": False},
-            "right": {"x": 0.0, "y": 0.0, "raw": None, "detected": False}
-        }
+        left_x, left_y = 0.0, 0.0
+        right_x, right_y = 0.0, 0.0
+        left_detected = False
+        right_detected = False
 
         sticks_config = self.config.get("sticks", {})
         frame_shape = frame.shape[:2]  # (height, width)
@@ -207,15 +208,23 @@ class StickDetector:
                 norm_x = max(-1.0, min(1.0, norm_x))
                 norm_y = max(-1.0, min(1.0, norm_y))
                 
-                result[side]["x"] = float(norm_x)
-                result[side]["y"] = float(norm_y)
-                result[side]["raw"] = (int(px_roi), int(py_roi))
-                result[side]["detected"] = True
-            else:
-                # Точка не найдена — возвращаем нейтральное положение
-                result[side]["raw"] = (w // 2, h // 2)
-                
-        return result
+                if side == "left":
+                    left_x = float(norm_x)
+                    left_y = float(norm_y)
+                    left_detected = True
+                else:
+                    right_x = float(norm_x)
+                    right_y = float(norm_y)
+                    right_detected = True
+        
+        # Возвращаем объект Sticks
+        # lx=roll, ly=throttle (left stick), rx=yaw/roll, ry=pitch (right stick)
+        return Sticks(
+            lx=left_x if left_detected else None,
+            ly=left_y if left_detected else None,
+            rx=right_x if right_detected else None,
+            ry=right_y if right_detected else None
+        )
 
     def _find_stick_point(self, roi: np.ndarray, 
                           hsv_lo: np.ndarray, 

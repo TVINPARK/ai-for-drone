@@ -43,12 +43,12 @@ class TestStickDetector:
         result = detector.detect(frame)
         
         # Проверка что точка найдена
-        assert result["left"]["detected"] == True
-        assert result["left"]["raw"] is not None
+        assert result.lx is not None
+        assert result.ly is not None
         
         # В центре нормализованные значения должны быть близки к 0
-        assert abs(result["left"]["x"]) < 0.15
-        assert abs(result["left"]["y"]) < 0.15
+        assert abs(result.lx) < 0.15
+        assert abs(result.ly) < 0.15
 
     def test_stick_center_position(self):
         """Тест нейтрального положения стика (точка в центре)."""
@@ -62,11 +62,11 @@ class TestStickDetector:
         
         result = detector.detect(frame)
         
-        assert result["left"]["detected"] == True
-        
         # В центре нормализованные значения должны быть близки к 0
-        assert abs(result["left"]["x"]) < 0.15
-        assert abs(result["left"]["y"]) < 0.15
+        assert result.lx is not None
+        assert result.ly is not None
+        assert abs(result.lx) < 0.15
+        assert abs(result.ly) < 0.15
 
     def test_stick_edge_positions(self):
         """Тест крайних положений стика."""
@@ -80,24 +80,24 @@ class TestStickDetector:
         cv2.circle(frame_right, (cx + radius - 5, cy), 10, (255, 255, 255), -1)
         result_right = detector.detect(frame_right)
         
-        assert result_right["left"]["detected"] == True
-        assert result_right["left"]["x"] > 0.7
+        assert result_right.lx is not None
+        assert result_right.lx > 0.7
         
         # Тест левого края (x = -1)
         frame_left = np.zeros((1080, 1920, 3), dtype=np.uint8)
         cv2.circle(frame_left, (cx - radius + 5, cy), 10, (255, 255, 255), -1)
         result_left = detector.detect(frame_left)
         
-        assert result_left["left"]["detected"] == True
-        assert result_left["left"]["x"] < -0.7
+        assert result_left.lx is not None
+        assert result_left.lx < -0.7
         
         # Тест верхнего края (y = +1, т.к. инверсия)
         frame_up = np.zeros((1080, 1920, 3), dtype=np.uint8)
         cv2.circle(frame_up, (cx, cy - radius + 5), 10, (255, 255, 255), -1)
         result_up = detector.detect(frame_up)
         
-        assert result_up["left"]["detected"] == True
-        assert result_up["left"]["y"] > 0.7
+        assert result_up.ly is not None
+        assert result_up.ly > 0.7
 
     def test_both_sticks_detection(self):
         """Тест одновременного обнаружения обоих стиков."""
@@ -113,17 +113,17 @@ class TestStickDetector:
         
         result = detector.detect(frame)
         
-        assert result["left"]["detected"] == True
-        assert result["right"]["detected"] == True
+        assert result.lx is not None
+        assert result.rx is not None
         
         # Оба должны быть близко к центру
-        assert abs(result["left"]["x"]) < 0.15
-        assert abs(result["left"]["y"]) < 0.15
-        assert abs(result["right"]["x"]) < 0.15
-        assert abs(result["right"]["y"]) < 0.15
+        assert abs(result.lx) < 0.15
+        assert abs(result.ly) < 0.15
+        assert abs(result.rx) < 0.15
+        assert abs(result.ry) < 0.15
 
     def test_no_point_detected(self):
-        """Тест когда точек нет — должно вернуть нейтральное положение."""
+        """Тест когда точек нет — должно вернуть None."""
         detector = StickDetector()
         
         # Пустой черный кадр
@@ -131,13 +131,11 @@ class TestStickDetector:
         
         result = detector.detect(frame)
         
-        # Точки не найдены
-        assert result["left"]["detected"] == False
-        assert result["right"]["detected"] == False
-        
-        # Но raw координаты должны быть установлены в центр ROI
-        assert result["left"]["raw"] is not None
-        assert result["right"]["raw"] is not None
+        # Точки не найдены - все значения None
+        assert result.lx is None
+        assert result.ly is None
+        assert result.rx is None
+        assert result.ry is None
 
     def test_color_threshold_detection(self):
         """Тест обнаружения точки с заданным цветовым порогом HSV."""
@@ -157,7 +155,7 @@ class TestStickDetector:
         
         result = detector.detect(frame)
         
-        assert result["left"]["detected"] == True
+        assert result.lx is not None
 
     def test_normalization_bounds(self):
         """Проверка что нормализованные значения всегда в [-1, 1]."""
@@ -170,6 +168,6 @@ class TestStickDetector:
         
         result = detector.detect(frame)
         
-        if result["left"]["detected"]:
-            assert -1.0 <= result["left"]["x"] <= 1.0
-            assert -1.0 <= result["left"]["y"] <= 1.0
+        if result.lx is not None:
+            assert -1.0 <= result.lx <= 1.0
+            assert -1.0 <= result.ly <= 1.0

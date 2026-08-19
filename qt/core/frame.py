@@ -12,6 +12,8 @@ HUD_ROI_FIELDS = ["pilot", "datetime", "battery", "mode", "limit",
 class Frame:
     t: float            # time.perf_counter() в момент получения
     img: np.ndarray     # BGR uint8, полный кадр
+    hud: Optional[Hud] = None
+    sticks: Optional[Sticks] = None
 
 @dataclass
 class Sticks:
