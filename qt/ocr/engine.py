@@ -19,7 +19,11 @@ WHITELISTS = {
 
 class EasyOCREngine:
     def __init__(self, cfg: dict):
-        import easyocr
+        try:
+            import easyocr
+        except ImportError:
+            raise ImportError("EasyOCR не установлен. Установите: pip install easyocr")
+        
         # Инициализируем читатель с поддержкой русского и английского языков
         # gpu=False для максимальной совместимости (работает на CPU)
         self._reader = easyocr.Reader(['ru', 'en'], gpu=False, verbose=False)

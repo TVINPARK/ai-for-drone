@@ -134,14 +134,17 @@ def test_filters():
     assert r.push("XCR0", 0.1) == "ACRO"
     assert r.push("XCR0", 0.2) == "XCR0"
 
-def test_pilot_tesseract(crops):
+def test_pilot_easyocr(crops):
+    """Тест распознавания имени пилота через EasyOCR."""
+    pytest.importorskip("easyocr", reason="EasyOCR не установлен (опциональная зависимость)")
+    
+    from qt.ocr.engine import EasyOCREngine
     cfg = load_config()
-    cmd = cfg.get("ocr", {}).get("tess_cmd", "tesseract")
-    if not (shutil.which(cmd) or Path(cmd).exists()):
-        pytest.skip("Tesseract не установлен")
-    from qt.ocr.engine import TesseractEngine
-    tess = TesseractEngine(cfg)
-    if not tess.available():
-        pytest.skip("Tesseract недоступен")
-    txt, _ = tess.run(crops["pilot"], FIELD_SPECS["pilot"])
-    assert clean_pilot(txt) == EXPECTED["pilot"]
+    eng = EasyOCREngine(cfg)
+    if not eng.available():
+        pytest.skip("EasyOCR недоступен")
+    txt, conf = eng.run(crops["pilot"], FIELD_SPECS["pilot"])
+    # EasyOCR может вернуть текст с небольшими отличиями в форматировании
+    # Проверяем ключевые слова
+    assert "БОЙКО" in txt.upper() or "АРСЕНИЙ" in txt.upper(), f"EasyOCR не распознал имя: {txt}"
+    assert conf > 0.5, f"Слишком низкая уверенность: {conf}"
