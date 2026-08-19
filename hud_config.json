@@ -1,0 +1,8 @@
+{
+  "video_source": "tests/fixtures/video_01.mp4",
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "rois": {}
+}
