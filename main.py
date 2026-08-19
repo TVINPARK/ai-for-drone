@@ -33,45 +33,21 @@ from qt.analysis.delta import DeltaCalculator
 from qt.report.html import ReportGenerator
 
 
-class ScreenCapture:
-    """Обёртка над источниками захвата."""
-    def __init__(self, config):
-        self.config = config
-        # Выбираем источник в зависимости от платформы
-        try:
-            self.source = DxCamSource(config)
-        except Exception:
-            self.source = MssSource(config)
-    
-    def get_frame(self):
-        return self.source.get_frame()
-
-
-class OcrEngine:
-    """Обёртка над OCR движками."""
-    def __init__(self, config):
-        self.config = config
-        self.easyocr = EasyOCREngine(config)
-        self.template_engine = TemplateEngine(config)
-    
-    def process_frame(self, frame):
-        # Упрощённая логика - нужно адаптировать под реальный API
-        from qt.core.frame import Hud
-        return Hud()
-
-
 class TelemetrySystem:
     """Основной класс системы телеметрии."""
 
-    def __init__(self, config_path: str = "config.json"):
+    def __init__(self, config_path: str = "config.json", video_path: Optional[str] = None):
         self.config = load_config(config_path)
         self.running = False
+        self.video_path = video_path  # Сохраняем путь к видео для использования в run()
         
         # Инициализация компонентов
         print("🚀 Инициализация модулей...")
         
-        self.capture = ScreenCapture(self.config)
-        self.ocr = OcrEngine(self.config)
+        # Захват инициализируем позже в run() в зависимости от источника
+        self.capture = None
+        
+        self.ocr = EasyOCREngine(self.config)
         self.stick_detector = StickDetector(self.config)
         self.logger = DataLogger(self.config)
         self.event_detector = EventDetector()
@@ -93,22 +69,33 @@ class TelemetrySystem:
         print("\n🛑 Получен сигнал остановки...")
         self.running = False
 
-    def run(self, duration: Optional[float] = None):
+    def run(self, duration: Optional[float] = None, video_path: Optional[str] = None):
         """
         Запуск основного цикла захвата и обработки.
         
         Args:
             duration: Длительность записи в секундах (None = бесконечно)
+            video_path: Путь к видеофайлу для обработки (None = захват с экрана)
         """
         print("🎬 Запуск захвата телеметрии...")
-        print("💡 Нажмите Ctrl+C для завершения вылета и генерации отчёта")
+        if video_path:
+            print(f"📁 Источник: видеофайл {video_path}")
+        else:
+            print("💡 Нажмите Ctrl+C для завершения вылета и генерации отчёта")
         
         self.running = True
         start_time = time.time()
         frame_count = 0
         
         try:
-            self.logger.start_session()
+            self.logger.start()
+            
+            # Если указан видеофайл, используем VideoCaptureSource
+            if video_path:
+                from qt.capture.source import VideoCaptureSource
+                capture_source = VideoCaptureSource(video_path)
+            else:
+                capture_source = self.capture
             
             while self.running:
                 # Проверка длительности
@@ -117,25 +104,29 @@ class TelemetrySystem:
                     break
                 
                 # 1. Захват кадра
-                frame = self.capture.get_frame()
+                t, frame = capture_source.grab()
                 if frame is None:
+                    if video_path:
+                        # Конец видеофайла
+                        break
                     time.sleep(0.01)
                     continue
                 
                 # 2. Распознавание HUD
-                hud = self.cr.process_frame(frame)
+                hud = self.ocr.process_frame(frame)
                 
                 # 3. Детекция стиков
                 sticks = self.stick_detector.detect(frame)
                 
                 # 4. Логгирование
-                self.logger.log_frame(frame.t, hud, sticks)
+                from qt.core.frame import Frame
+                f = Frame(t=t, img=frame)
+                f.hud = hud
+                f.sticks = sticks
+                self.logger.put(f)
                 
                 # 5. Детекция событий
-                events = self.event_detector.process(hud, sticks, frame.t)
-                for event in events:
-                    self.logger.log_event(event)
-                    print(f"📌 Событие: {event.type}")
+                self.event_detector.process_frame(f)
                 
                 frame_count += 1
                 
@@ -151,7 +142,7 @@ class TelemetrySystem:
             traceback.print_exc()
         finally:
             self.running = False
-            self.logger.end_session()
+            self.logger.stop()
             
         # Пост-обработка и отчёт
         self._generate_report()
@@ -222,6 +213,12 @@ def main():
         description="ТВ-телеметрия Квадросима — система анализа полётов дрона"
     )
     parser.add_argument(
+        "video",
+        nargs="?",
+        default=None,
+        help="Путь к видеофайлу для обработки (опционально)"
+    )
+    parser.add_argument(
         "-c", "--config",
         default="config.json",
         help="Путь к файлу конфигурации (по умолчанию: config.json)"
@@ -253,7 +250,7 @@ def main():
     
     # Запуск системы
     system = TelemetrySystem(config_path=args.config)
-    system.run(duration=args.time)
+    system.run(duration=args.time, video_path=args.video)
 
 
 if __name__ == "__main__":

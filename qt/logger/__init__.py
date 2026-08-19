@@ -28,7 +28,11 @@ class DataLogger:
     - Автоматическое создание сессий и кругов
     """
     
-    def __init__(self, db_path: str = "telemetry.db", buffer_size: int = 100, flush_interval: float = 0.5):
+    def __init__(self, config=None, db_path: str = "telemetry.db", buffer_size: int = 100, flush_interval: float = 0.5):
+        # Если передан конфиг как первый аргумент (словарь), извлекаем db_path из него
+        if isinstance(config, dict):
+            db_path = config.get("db_path", "telemetry.db")
+        
         self.db_path = Path(db_path)
         self.buffer_size = buffer_size
         self.flush_interval = flush_interval
@@ -461,3 +465,48 @@ class DataLogger:
             }
             for row in self._cursor.fetchall()
         ]
+
+    def get_session_data(self, session_id: Optional[int] = None) -> Any:
+        """Получить все данные сессии как DataFrame."""
+        import pandas as pd
+        
+        if session_id is None:
+            session_id = self._session_id
+            
+        if session_id is None or self._cursor is None:
+            import pandas as pd
+            return pd.DataFrame()
+        
+        query = """
+            SELECT 
+                timestamp,
+                lap_number,
+                hud_speed,
+                hud_altitude,
+                hud_current_lap_time,
+                hud_best_lap_time,
+                hud_battery_v,
+                hud_battery_a,
+                stick_throttle,
+                stick_roll,
+                stick_pitch,
+                stick_yaw
+            FROM frames
+            WHERE session_id = ?
+            ORDER BY timestamp
+        """
+        
+        self._cursor.execute(query, (session_id,))
+        rows = self._cursor.fetchall()
+        
+        if not rows:
+            import pandas as pd
+            return pd.DataFrame()
+        
+        columns = [
+            'timestamp', 'lap_number', 'speed', 'altitude',
+            'cur_lap_time', 'best_lap_time', 'battery_v', 'battery_a',
+            'throttle', 'roll', 'pitch', 'yaw'
+        ]
+        
+        return pd.DataFrame(rows, columns=columns)

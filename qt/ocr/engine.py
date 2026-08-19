@@ -19,10 +19,13 @@ WHITELISTS = {
 
 class EasyOCREngine:
     def __init__(self, cfg: dict):
+        self.cfg = cfg
         try:
             import easyocr
         except ImportError:
-            raise ImportError("EasyOCR не установлен. Установите: pip install easyocr")
+            print("⚠️ EasyOCR не установлен. Будет использоваться только шаблонный движок для цифр.")
+            self._reader = None
+            return
         
         # Инициализируем читатель с поддержкой русского и английского языков
         # gpu=False для максимальной совместимости (работает на CPU)
@@ -35,7 +38,76 @@ class EasyOCREngine:
         except Exception:
             return False
 
+    def process_frame(self, frame) -> Hud:
+        """Обрабатывает кадр и возвращает объект Hud с распознанными полями."""
+        from .fields import FIELD_SPECS, parse_value
+        from ..core.frame import Hud
+        
+        # Если передан Frame, извлекаем изображение
+        if hasattr(frame, 'img'):
+            img = frame.img
+        else:
+            img = frame
+            
+        hud_dict = {}
+        
+        # Если EasyOCR не доступен, используем только TemplateEngine для цифр
+        if self._reader is None:
+            # Возвращаем пустой HUD или используем шаблонный движок
+            from .digits import TemplateEngine
+            template_engine = TemplateEngine(self.cfg)
+            result_dict = template_engine.process_frame(img)
+            return Hud(**result_dict) if isinstance(result_dict, dict) else result_dict
+        
+        # Извлекаем ROI из конфигурации
+        rois = self.cfg.get("rois", {})
+        
+        for field_name, spec in FIELD_SPECS.items():
+            if field_name not in rois:
+                continue
+                
+            roi = rois[field_name]
+            x, y, w, h = roi['x'], roi['y'], roi['w'], roi['h']
+            
+            # Вырезаем ROI из кадра
+            crop = img[y:y+h, x:x+w]
+            
+            if crop.size == 0:
+                # Устанавливаем значение по умолчанию в зависимости от типа поля
+                field_target = spec.get('field')
+                if isinstance(field_target, tuple):
+                    for f in field_target:
+                        hud_dict[f] = None
+                elif field_target:
+                    hud_dict[field_target] = None
+                continue
+            
+            # Распознаём поле
+            txt, conf = self.run(crop, spec)
+            
+            # Парсим значение согласно спецификации
+            parsed = parse_value(spec['kind'], txt)
+            
+            # Маппинг на поля Hud
+            field_target = spec.get('field')
+            if isinstance(field_target, tuple):
+                # Для полей типа laps и battery parsed - это кортеж
+                if isinstance(parsed, tuple) and len(parsed) == len(field_target):
+                    for f, v in zip(field_target, parsed):
+                        hud_dict[f] = v
+                else:
+                    for f in field_target:
+                        hud_dict[f] = None
+            elif field_target:
+                hud_dict[field_target] = parsed
+        
+        return Hud(**hud_dict)
+
     def run(self, crop, spec: dict, binary: bool = False):
+        # Если EasyOCR не доступен, возвращаем пустой результат
+        if self._reader is None:
+            return "", 0.0
+        
         # Для текстовых полей (pilot) используем предварительную обработку
         if spec.get("kind") == "pilot":
             gray = crop if len(crop.shape) == 2 else cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)

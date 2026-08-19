@@ -5,62 +5,34 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.DS_Store
-Thumbs.db
-
-# Pytest
-.pytest_cache/
-__pycache__/
-
-# Build and distribution
-build/
-dist/
-*.egg
-*.egg-info/
 *.so
-*.dylib
-*.dll
-*.exe
-*.out
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# Environment variables
-.env
-.env.local
-*.env.*
-
-# Coverage
+.coverage
 coverage/
 htmlcov/
-.coverage*
-
-# Gradle
-.gradle/
-
-# MyPy
+.pytest_cache/
 .mypy_cache/
 
-# Jupyter
-.ipynb_checkpoints/
+# Databases
+*.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.swp
+.swo
+
+# Environment
+.env
+.env.local
+.env.*
+venv/
+.venv/
+env/
+ENV/
 
 # OS generated files
 .DS_Store

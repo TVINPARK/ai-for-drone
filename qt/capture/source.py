@@ -2,10 +2,32 @@
 from __future__ import annotations
 import threading
 import time
+import cv2
 from collections import deque
 import numpy as np
 
 from ..core.frame import Frame
+
+class VideoCaptureSource:
+    """Источник кадров из видеофайла."""
+    name = "video"
+    
+    def __init__(self, video_path: str):
+        self.cap = cv2.VideoCapture(video_path)
+        if not self.cap.isOpened():
+            raise IOError(f"Не удалось открыть видеофайл: {video_path}")
+        self.fps = self.cap.get(cv2.CAP_PROP_FPS) or 30.0
+        
+    def grab(self):
+        ret, frame = self.cap.read()
+        if not ret:
+            return time.perf_counter(), None
+        t = time.perf_counter()
+        return t, frame
+    
+    def stop(self):
+        self.cap.release()
+
 
 class MssSource:
     name = "mss"
@@ -27,6 +49,9 @@ class MssSource:
 class DxCamSource:
     name = "dxcam"
     def __init__(self, monitor=0, fps_target=0):
+        import sys
+        if sys.platform != "win32":
+            raise ImportError("DxCam only works on Windows")
         import dxcam
         self._cam = dxcam.create(output_idx=monitor)
         self._cam.start(target_fps=fps_target if fps_target > 0 else 240, video_mode=True)
