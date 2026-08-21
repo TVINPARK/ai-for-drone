@@ -1,13 +1,13 @@
-"""OCR модуль: шаблонный движок + EasyOCR бэкенд."""
+"""OCR модуль: шаблонный движок."""
 from .digits import TemplateEngine
-from .engine import EasyOCREngine
+from .engine import TemplateOCREngine
 from .fields import parse_fields, FieldSpec
 from .preprocess import prepare
 from .filters import MedianFilter, RepeatFilter
 
 __all__ = [
     "TemplateEngine",
-    "EasyOCREngine",
+    "TemplateOCREngine",
     "parse_fields",
     "parse_value",
     "FieldSpec",

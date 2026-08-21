@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from qt.core.config import load_config
 from qt.capture.source import MssSource, DxCamSource
-from qt.ocr.engine import EasyOCREngine
+from qt.ocr.engine import TemplateOCREngine
 from qt.ocr.digits import TemplateEngine
 from qt.sticks.detector import StickDetector
 from qt.logger import DataLogger
@@ -47,7 +47,7 @@ class TelemetrySystem:
         # Захват инициализируем позже в run() в зависимости от источника
         self.capture = None
         
-        self.ocr = EasyOCREngine(self.config)
+        self.ocr = TemplateOCREngine(self.config)
         self.stick_detector = StickDetector(self.config)
         self.logger = DataLogger(self.config)
         self.event_detector = EventDetector()

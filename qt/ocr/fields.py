@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from .digits import TemplateEngine
-from .engine import EasyOCREngine
+from .engine import TemplateOCREngine
 from .preprocess import prepare
 
 FIELD_SPECS = {
@@ -60,7 +60,7 @@ def clean_pilot(s):
 class HudParser:
     def __init__(self, cfg: dict, atlas_path=None):
         self.tpl = TemplateEngine(atlas_path)
-        self.ocr = EasyOCREngine(cfg)
+        self.ocr = TemplateOCREngine(cfg)
 
     def parse_field(self, name, crop):
         spec = FIELD_SPECS[name]
